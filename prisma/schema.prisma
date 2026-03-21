@@ -1,0 +1,29 @@
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+  moduleFormat    = "cjs"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum Role {
+  STUDENT
+  COURSE_REP
+  LECTURER
+  ADMIN
+}
+
+model Student {
+  id            Int             @id @default(autoincrement())
+  firstName     String
+  lastName      String
+  email         String          @unique
+  phoneNumber   String
+  matricNumber  String           @unique
+  role          Role
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+}
