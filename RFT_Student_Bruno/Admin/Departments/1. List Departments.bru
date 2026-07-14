@@ -1,0 +1,16 @@
+meta {
+  name: 1. List Departments
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/admin/departments
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+

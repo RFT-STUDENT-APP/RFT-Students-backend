@@ -1,0 +1,16 @@
+meta {
+  name: Get Tickets
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/support/admin/tickets
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+

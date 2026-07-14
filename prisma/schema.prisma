@@ -1,8 +1,5 @@
-
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/prisma"
-  moduleFormat    = "cjs"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -11,19 +8,299 @@ datasource db {
 
 enum Role {
   STUDENT
-  COURSE_REP
   LECTURER
-  ADMIN
+  SCHOOL_ADMIN
+  SUPER_ADMIN
 }
 
-model Student {
-  id            Int             @id @default(autoincrement())
-  firstName     String
-  lastName      String
-  email         String          @unique
-  phoneNumber   String
-  matricNumber  String           @unique
-  role          Role
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
+enum OtpPurpose {
+  VERIFY_EMAIL
+  RESET_PASSWORD
+}
+
+model School {
+  id             String       @id @default(uuid())
+  name           String       @unique
+  acronym        String?
+  contactEmail   String?
+  phone          String?
+  address        String?
+  capacity       Int?
+  status         String       @default("active")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  faculties      Faculty[]
+  departments    Department[]
+  users          User[]
+  courses        Course[]
+  contents       Content[]
+  announcements  Announcement[]
+  subscriptions  Subscription[]
+  admissionRequests AdmissionRequest[]
+}
+
+model Faculty {
+  id             String       @id @default(uuid())
+  name           String
+  deanName       String?
+  capacityTarget Int?
+  status         String       @default("active")
+  schoolId       String
+  school         School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  departments    Department[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Department {
+  id             String       @id @default(uuid())
+  name           String
+  schoolId       String
+  facultyId      String
+  school         School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  faculty        Faculty      @relation(fields: [facultyId], references: [id], onDelete: Cascade)
+  users          User[]
+  courses        Course[]
+  admissionRequests AdmissionRequest[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model User {
+  id             String       @id @default(uuid())
+  email          String       @unique
+  passwordHash   String
+  fullName       String
+  phoneNumber    String?
+  role           Role         @default(STUDENT)
+  status         String       @default("active")
+  profileImageUrl String?
+  matricNumber   String?      @unique
+
+  schoolId       String?
+  departmentId   String?
+  school         School?      @relation(fields: [schoolId], references: [id])
+  department     Department?  @relation(fields: [departmentId], references: [id])
+  
+  level          String?
+
+  otps           Otp[]
+  classRepAssignments ClassRepAssignment[]
+  taughtCourses  Course[]     @relation("LecturerCourses")
+  announcements  Announcement[]
+  notifications  Notification[]
+  payments       Payment[]
+  submissions    AssessmentSubmission[]
+  admissionRequests AdmissionRequest[]
+  tickets        SupportTicket[]
+  feedbacks      Feedback[]
+
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@map("users")
+}
+
+model ClassRepAssignment {
+  id             String       @id @default(uuid())
+  courseId       String
+  studentId      String
+  channel        String?
+  active         Boolean      @default(true)
+  course         Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  student        User         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Course {
+  id             String       @id @default(uuid())
+  code           String
+  name           String
+  unit           Int?
+  credits        Int?
+  semester       Int?
+  level          String?
+  status         String       @default("active")
+  module         String?
+
+  schoolId       String
+  departmentId   String
+  school         School       @relation(fields: [schoolId], references: [id])
+  department     Department   @relation(fields: [departmentId], references: [id])
+
+  lecturers      User[]       @relation("LecturerCourses")
+  classReps      ClassRepAssignment[]
+  contents       Content[]
+  announcements  Announcement[]
+  assessments    Assessment[]
+  classSessions  ClassSession[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Otp {
+  id         String     @id @default(uuid())
+  purpose    OtpPurpose
+  codeHash   String
+  expiresAt  DateTime
+  consumedAt DateTime?
+
+  userId     String
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt  DateTime   @default(now())
+
+  @@index([userId, purpose])
+}
+
+model RevokedToken {
+  id        String   @id @default(uuid())
+  jti       String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+model Content {
+  id             String       @id @default(uuid())
+  title          String
+  type           String       // "resource", "past_question"
+  fileType       String
+  previewUrl     String?
+  downloadUrl    String?
+  visibility     String       @default("public")
+  price          Int?         @default(0)
+  courseId       String?
+  schoolId       String?
+  course         Course?      @relation(fields: [courseId], references: [id])
+  school         School?      @relation(fields: [schoolId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Announcement {
+  id             String       @id @default(uuid())
+  title          String
+  message        String
+  audienceType   String
+  courseId       String?
+  schoolId       String?
+  authorId       String
+  course         Course?      @relation(fields: [courseId], references: [id])
+  school         School?      @relation(fields: [schoolId], references: [id])
+  author         User         @relation(fields: [authorId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Notification {
+  id             String       @id @default(uuid())
+  title          String
+  message        String
+  type           String
+  isRead         Boolean      @default(false)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Subscription {
+  id             String       @id @default(uuid())
+  planName       String
+  price          Int
+  status         String       @default("active")
+  schoolId       String
+  school         School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Payment {
+  id             String       @id @default(uuid())
+  reference      String       @unique
+  amount         Int
+  currency       String       @default("NGN")
+  status         String       @default("pending")
+  itemType       String       // e.g. "past_question" or "subscription"
+  itemId         String
+  userId         String
+  user           User         @relation(fields: [userId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Assessment {
+  id             String       @id @default(uuid())
+  title          String
+  type           String       // "quiz", "assignment"
+  description    String?
+  dueDate        DateTime?
+  courseId       String
+  course         Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  submissions    AssessmentSubmission[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model AssessmentSubmission {
+  id             String       @id @default(uuid())
+  score          Int?
+  fileUrl        String?
+  assessmentId   String
+  userId         String
+  assessment     Assessment   @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model ClassSession {
+  id             String       @id @default(uuid())
+  topic          String
+  startTime      DateTime
+  endTime        DateTime
+  location       String?      // physical room or meeting URL
+  type           String       // "virtual", "physical"
+  courseId       String
+  course         Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model AdmissionRequest {
+  id             String       @id @default(uuid())
+  status         String       @default("pending") // "pending", "approved", "rejected"
+  userId         String
+  schoolId       String
+  departmentId   String?
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  school         School       @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  department     Department?  @relation(fields: [departmentId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model SupportTicket {
+  id             String       @id @default(uuid())
+  subject        String
+  description    String
+  status         String       @default("open") // "open", "in_progress", "resolved", "closed"
+  priority       String       @default("medium") // "low", "medium", "high", "critical"
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Feedback {
+  id             String       @id @default(uuid())
+  message        String
+  type           String       // "bug", "feature_request", "general"
+  isAnonymous    Boolean      @default(false)
+  userId         String?
+  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
 }

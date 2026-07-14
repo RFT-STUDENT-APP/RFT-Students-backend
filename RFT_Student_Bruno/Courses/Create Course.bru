@@ -1,0 +1,24 @@
+meta {
+  name: Create Course
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/admin/courses
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "code": "CPE 101",
+    "name": "Intro to Computing",
+    "schoolId": "{{schoolId}}",
+    "departmentId": "DEPT_ID"
+  }
+}

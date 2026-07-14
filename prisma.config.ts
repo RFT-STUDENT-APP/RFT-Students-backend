@@ -7,6 +7,7 @@ export default defineConfig({
   schema: 'prisma/schema.prisma',
   migrations: {
     path: 'prisma/migrations',
+    seed: 'node prisma/create-prisma-shims.cjs && ts-node --transpile-only prisma/seed.ts',
   },
   datasource: {
     url: process.env['DATABASE_URL'],

@@ -1,0 +1,16 @@
+meta {
+  name: Get Admin Courses
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/admin/courses
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+

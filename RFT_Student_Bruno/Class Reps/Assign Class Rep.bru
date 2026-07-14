@@ -1,0 +1,22 @@
+meta {
+  name: Assign Class Rep
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/admin/class-reps
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "courseId": "{{courseId}}",
+    "studentId": "USER_ID"
+  }
+}

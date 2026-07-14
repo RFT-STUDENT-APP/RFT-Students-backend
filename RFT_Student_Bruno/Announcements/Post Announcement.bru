@@ -1,0 +1,23 @@
+meta {
+  name: Post Announcement
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/announcements
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "title": "Exam Rescheduled",
+    "message": "Exams moved to next week",
+    "audienceType": "school"
+  }
+}

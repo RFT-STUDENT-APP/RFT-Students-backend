@@ -1,0 +1,21 @@
+meta {
+  name: Submit Assessment
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/assessments/ASSESS_ID/submit
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "fileUrl": "https://example.com/submission.pdf"
+  }
+}

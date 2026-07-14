@@ -1,0 +1,16 @@
+meta {
+  name: Mark Read
+  type: http
+  seq: 1
+}
+
+patch {
+  url: {{baseUrl}}/notifications/NOTIF_ID/read
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+

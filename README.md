@@ -96,3 +96,72 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+
+## Auth (JWT) - Full Flow
+
+### What you get
+
+- `POST /auth/register` for `student` and `class_rep` (course rep via `access_code`)
+- `POST /auth/login` for all roles
+- `GET /auth/me` returns the logged-in user details
+- `POST /auth/verify-email` verify registration OTP
+- `POST /auth/forgot-password/request` send reset OTP
+- `POST /auth/forgot-password/reset` verify OTP + reset password
+- `POST /auth/logout` revoke the current token
+- `GET /universities` public list (seeded with Nigeria)
+- `POST /auth/register/lecturer` for `ADMIN` users
+- `POST /auth/super-admin/create-university-admin` for `SUPER_ADMIN` users
+
+### Commands
+
+1. Install dependencies
+
+```bash
+npm install
+```
+
+2. Configure environment
+
+```bash
+cp .env.example .env
+```
+
+3. Update DB schema (example uses `db push`)
+
+```bash
+npx prisma db push
+```
+
+If you already have a database with the old `Student` table, you may need to reset it (or run proper migrations) because this auth flow adds `passwordHash`, `universityId`, and makes `matricNumber` optional for non-student roles.
+
+4. Seed the database super admin
+
+```bash
+npx prisma db seed
+```
+
+5. Run the API
+
+```bash
+npm run start:dev
+```
+
+### Environment variables you must set
+
+- `DATABASE_URL`
+- `JWT_SECRET`
+- `SUPER_ADMIN_EMAIL`
+- `SUPER_ADMIN_PASSWORD`
+- `SUPER_ADMIN_PHONE` (required by the seed)
+
+### Postman
+
+Import `postman.json` from the project root and follow the request order inside the collection:
+
+0. List universities
+1. Login as SUPER_ADMIN
+2. Create university ADMIN (this sets the `access_code` used by `class_rep`)
+3. Register `student` (OTP will be logged; set Postman variable `otp` manually)
+4. Register `class_rep`
+5. Register `lecturer` (requires ADMIN token)
+6. Call `/auth/me` for each role

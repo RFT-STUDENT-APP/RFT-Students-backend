@@ -1,0 +1,16 @@
+meta {
+  name: Get All Content
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/admin/content
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+

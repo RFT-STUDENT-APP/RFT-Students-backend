@@ -1,0 +1,24 @@
+meta {
+  name: Paystack Webhook
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/payments/webhook
+  body: json
+  auth: none
+}
+
+headers {
+  x-paystack-signature: mock_signature
+}
+
+body:json {
+  {
+    "event": "charge.success",
+    "data": {
+      "reference": "REF_ID"
+    }
+  }
+}

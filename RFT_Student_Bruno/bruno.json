@@ -1,0 +1,32 @@
+{
+  "version": "1",
+  "name": "RFT Student API",
+  "type": "collection",
+  "environments": [
+    {
+      "name": "Local",
+      "variables": [
+        {
+          "name": "baseUrl",
+          "value": "http://localhost:3000",
+          "enabled": true
+        },
+        {
+          "name": "token",
+          "value": "",
+          "enabled": true
+        },
+        {
+          "name": "schoolId",
+          "value": "",
+          "enabled": true
+        },
+        {
+          "name": "courseId",
+          "value": "",
+          "enabled": true
+        }
+      ]
+    }
+  ]
+}

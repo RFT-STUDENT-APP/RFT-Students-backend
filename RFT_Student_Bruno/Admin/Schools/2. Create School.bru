@@ -1,0 +1,23 @@
+meta {
+  name: 2. Create School
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/admin/schools
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+{
+  "name": "University of Lagos",
+  "contactEmail": "admin@unilag.edu.ng",
+  "phone": "+2348012345678"
+}
+}

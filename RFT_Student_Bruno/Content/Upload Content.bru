@@ -1,0 +1,23 @@
+meta {
+  name: Upload Content
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/admin/content
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "title": "CPE 101 Handout",
+    "type": "resource",
+    "fileType": "pdf"
+  }
+}

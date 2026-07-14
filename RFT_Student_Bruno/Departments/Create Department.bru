@@ -1,0 +1,23 @@
+meta {
+  name: Create Department
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/admin/departments
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "name": "Computer Engineering",
+    "schoolId": "{{schoolId}}",
+    "facultyId": "FACULTY_ID"
+  }
+}

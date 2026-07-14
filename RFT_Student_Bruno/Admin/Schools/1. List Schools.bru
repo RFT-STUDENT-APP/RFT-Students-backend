@@ -1,0 +1,16 @@
+meta {
+  name: 1. List Schools
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/admin/schools
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+

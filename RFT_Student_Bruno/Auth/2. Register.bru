@@ -1,0 +1,25 @@
+meta {
+  name: 2. Register
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/register
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+{
+  "email": "student@school.edu",
+  "password": "StrongPassword123!",
+  "confirmPassword": "StrongPassword123!",
+  "fullName": "Student Name",
+  "matricNumber": "ENG/2021/045"
+}
+}

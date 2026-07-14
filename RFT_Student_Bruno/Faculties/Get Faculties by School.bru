@@ -1,0 +1,16 @@
+meta {
+  name: Get Faculties by School
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/admin/schools/{{schoolId}}/faculties
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+

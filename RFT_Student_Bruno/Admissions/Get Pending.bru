@@ -1,0 +1,16 @@
+meta {
+  name: Get Pending
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/admissions/admin/pending
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+

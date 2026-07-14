@@ -1,0 +1,22 @@
+meta {
+  name: 1. Login
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+{
+  "email": "admin@rft-student.edu",
+  "password": "SuperSecretAdmin123!"
+}
+}

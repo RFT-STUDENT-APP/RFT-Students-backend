@@ -1,0 +1,16 @@
+meta {
+  name: Get Announcements
+  type: http
+  seq: 1
+}
+
+get {
+  url: {{baseUrl}}/announcements
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+

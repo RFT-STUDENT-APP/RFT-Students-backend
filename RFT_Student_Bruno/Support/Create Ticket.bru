@@ -1,0 +1,22 @@
+meta {
+  name: Create Ticket
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/support/tickets
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "subject": "Can't login",
+    "description": "Getting 500 error"
+  }
+}

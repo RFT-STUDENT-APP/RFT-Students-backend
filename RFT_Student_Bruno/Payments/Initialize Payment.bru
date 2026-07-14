@@ -1,0 +1,23 @@
+meta {
+  name: Initialize Payment
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/payments/initialize
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "itemType": "past_question",
+    "itemId": "PQ_ID",
+    "amount": 5000
+  }
+}

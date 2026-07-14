@@ -1,0 +1,22 @@
+meta {
+  name: Apply
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/admissions/apply
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{token}}
+}
+
+body:json {
+  {
+    "schoolId": "{{schoolId}}",
+    "departmentId": "DEPT_ID"
+  }
+}

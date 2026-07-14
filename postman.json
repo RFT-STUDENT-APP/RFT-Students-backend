@@ -1,0 +1,376 @@
+{
+  "info": {
+    "name": "RFT Auth Flow (JWT) - Student / CourseRep / Lecturer / Admin / SuperAdmin",
+    "_postman_id": "c3f4d9f0-6c52-4b6e-9b3a-2c8f9f0dd7c1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3005/v1" },
+    { "key": "superAdminEmail", "value": "superadmin@example.com" },
+    { "key": "superAdminPassword", "value": "SuperAdmin123!" },
+    { "key": "universityName", "value": "University of Lagos" },
+    { "key": "accessCode", "value": "CLASSREP-ACCESS-12345" },
+    { "key": "adminFirstName", "value": "University" },
+    { "key": "adminLastName", "value": "Admin" },
+    { "key": "adminEmail", "value": "admin@rftu.edu" },
+    { "key": "adminPhone", "value": "+250700000001" },
+    { "key": "adminPassword", "value": "AdminPass123!" },
+    { "key": "studentFirstName", "value": "Test" },
+    { "key": "studentLastName", "value": "Student" },
+    { "key": "studentEmail", "value": "student@rftu.edu" },
+    { "key": "studentPhone", "value": "+250700000002" },
+    { "key": "studentMatricNo", "value": "MAT-STU-0001" },
+    { "key": "studentPassword", "value": "StudentPass123!" },
+    { "key": "courseRepFirstName", "value": "Course" },
+    { "key": "courseRepLastName", "value": "Rep" },
+    { "key": "courseRepEmail", "value": "courserep@rftu.edu" },
+    { "key": "courseRepPhone", "value": "+250700000003" },
+    { "key": "courseRepMatricNo", "value": "MAT-REP-0001" },
+    { "key": "courseRepPassword", "value": "RepPass123!" },
+    { "key": "lecturerFirstName", "value": "Lecturer" },
+    { "key": "lecturerLastName", "value": "One" },
+    { "key": "lecturerEmail", "value": "lecturer@rftu.edu" },
+    { "key": "lecturerPhone", "value": "+250700000004" },
+    { "key": "lecturerPassword", "value": "LecturerPass123!" },
+    { "key": "tokenSuperAdmin", "value": "" },
+    { "key": "tokenAdmin", "value": "" },
+    { "key": "tokenStudent", "value": "" },
+    { "key": "tokenCourseRep", "value": "" },
+    { "key": "tokenLecturer", "value": "" },
+    { "key": "otp", "value": "000000" }
+  ],
+  "item": [
+    {
+      "name": "0) List universities (public)",
+      "request": {
+        "method": "GET",
+        "url": {
+          "raw": "{{baseUrl}}/universities?country=Nigeria",
+          "host": ["{{baseUrl}}"],
+          "path": ["universities"],
+          "query": [{ "key": "country", "value": "Nigeria" }]
+        }
+      }
+    },
+    {
+      "name": "1) SUPER_ADMIN login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{superAdminEmail}}\",\n  \"password\": \"{{superAdminPassword}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "pm.environment.set('tokenSuperAdmin', json.accessToken);",
+              "pm.test('SUPER_ADMIN login returns accessToken', function () {",
+              "  pm.expect(json).to.have.property('accessToken');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2) Create university ADMIN (sets access_code for class_rep)",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{tokenSuperAdmin}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/auth/super-admin/create-university-admin",
+          "host": ["{{baseUrl}}"],
+          "path": ["auth", "super-admin", "create-university-admin"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"universityName\": \"{{universityName}}\",\n  \"courseRepAccessCode\": \"{{accessCode}}\",\n  \"adminFirstName\": \"{{adminFirstName}}\",\n  \"adminLastName\": \"{{adminLastName}}\",\n  \"adminEmail\": \"{{adminEmail}}\",\n  \"adminPhone\": \"{{adminPhone}}\",\n  \"adminPassword\": \"{{adminPassword}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "pm.test('Create university ADMIN returns message', function () {",
+              "  pm.expect(json).to.have.property('message');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2b) Verify ADMIN email OTP",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/auth/verify-email", "host": ["{{baseUrl}}"], "path": ["auth", "verify-email"] },
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"otp\": \"{{otp}}\"\n}" }
+      }
+    },
+    {
+      "name": "2c) Login as ADMIN",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}" }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "pm.environment.set('tokenAdmin', json.accessToken);",
+              "pm.test('ADMIN login returns accessToken', function () {",
+              "  pm.expect(json).to.have.property('accessToken');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3) Register student (role=student)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"{{studentFirstName}}\",\n  \"lastName\": \"{{studentLastName}}\",\n  \"email\": \"{{studentEmail}}\",\n  \"phone\": \"{{studentPhone}}\",\n  \"matricNo\": \"{{studentMatricNo}}\",\n  \"password\": \"{{studentPassword}}\",\n  \"role\": \"student\",\n  \"universityName\": \"{{universityName}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "pm.test('Register student returns message', function () {",
+              "  pm.expect(json).to.have.property('message');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3b) Verify student email OTP",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/auth/verify-email", "host": ["{{baseUrl}}"], "path": ["auth", "verify-email"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{studentEmail}}\",\n  \"otp\": \"{{otp}}\"\n}"
+        }
+      }
+    },
+    {
+      "name": "3c) Login as student",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{studentEmail}}\",\n  \"password\": \"{{studentPassword}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "pm.environment.set('tokenStudent', json.accessToken);",
+              "pm.test('Student login returns accessToken', function () {",
+              "  pm.expect(json).to.have.property('accessToken');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4) Register class_rep (role=class_rep + access_code)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/auth/register", "host": ["{{baseUrl}}"], "path": ["auth", "register"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"{{courseRepFirstName}}\",\n  \"lastName\": \"{{courseRepLastName}}\",\n  \"email\": \"{{courseRepEmail}}\",\n  \"phone\": \"{{courseRepPhone}}\",\n  \"matricNo\": \"{{courseRepMatricNo}}\",\n  \"password\": \"{{courseRepPassword}}\",\n  \"role\": \"class_rep\",\n  \"universityName\": \"{{universityName}}\",\n  \"access_code\": \"{{accessCode}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "pm.test('Register class_rep returns message', function () {",
+              "  pm.expect(json).to.have.property('message');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4b) Verify class_rep email OTP",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/auth/verify-email", "host": ["{{baseUrl}}"], "path": ["auth", "verify-email"] },
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{courseRepEmail}}\",\n  \"otp\": \"{{otp}}\"\n}" }
+      }
+    },
+    {
+      "name": "4c) Login as class_rep",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{courseRepEmail}}\",\n  \"password\": \"{{courseRepPassword}}\"\n}" }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "pm.environment.set('tokenCourseRep', json.accessToken);",
+              "pm.test('class_rep login returns accessToken', function () {",
+              "  pm.expect(json).to.have.property('accessToken');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5) Admin registers lecturer",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/auth/register/lecturer", "host": ["{{baseUrl}}"], "path": ["auth", "register", "lecturer"] },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"{{lecturerFirstName}}\",\n  \"lastName\": \"{{lecturerLastName}}\",\n  \"email\": \"{{lecturerEmail}}\",\n  \"phone\": \"{{lecturerPhone}}\",\n  \"password\": \"{{lecturerPassword}}\",\n  \"universityName\": \"{{universityName}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "pm.test('Register lecturer returns message', function () {",
+              "  pm.expect(json).to.have.property('message');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "5b) Verify lecturer email OTP",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/auth/verify-email", "host": ["{{baseUrl}}"], "path": ["auth", "verify-email"] },
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{lecturerEmail}}\",\n  \"otp\": \"{{otp}}\"\n}" }
+      }
+    },
+    {
+      "name": "5c) Login as lecturer",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": { "raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth", "login"] },
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"{{lecturerEmail}}\",\n  \"password\": \"{{lecturerPassword}}\"\n}" }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const json = pm.response.json();",
+              "pm.environment.set('tokenLecturer', json.accessToken);",
+              "pm.test('Lecturer login returns accessToken', function () {",
+              "  pm.expect(json).to.have.property('accessToken');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6a) GET /auth/me as student",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{tokenStudent}}" }],
+        "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+      }
+    },
+    {
+      "name": "6b) GET /auth/me as class_rep",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{tokenCourseRep}}" }],
+        "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+      }
+    },
+    {
+      "name": "6c) GET /auth/me as admin",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{tokenAdmin}}" }],
+        "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+      }
+    },
+    {
+      "name": "6d) GET /auth/me as lecturer",
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Authorization", "value": "Bearer {{tokenLecturer}}" }],
+        "url": { "raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth", "me"] }
+      }
+    },
+    {
+      "name": "7) Logout student",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{tokenStudent}}" }],
+        "url": { "raw": "{{baseUrl}}/auth/logout", "host": ["{{baseUrl}}"], "path": ["auth", "logout"] }
+      }
+    }
+  ]
+}
+
