@@ -2,9 +2,33 @@ import 'dotenv/config';
 import { NestFactory } from '@nestjs/core';
 import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
+import * as express from 'express';
+import { join } from 'path';
+import * as fs from 'fs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ limit: '50mb', extended: true }));
+  app.enableCors({ origin: '*', credentials: true });
+
+  const uploadsDir = join(process.cwd(), 'uploads');
+  if (!fs.existsSync(uploadsDir)) {
+    fs.mkdirSync(uploadsDir, { recursive: true });
+  }
+  const samplePdfPath = join(uploadsDir, 'sample_past_question.pdf');
+  if (!fs.existsSync(samplePdfPath)) {
+    fs.writeFileSync(samplePdfPath, '%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R >>\nendobj\n4 0 obj\n<< /Length 55 >>\nstream\nBT /F1 24 Tf 100 700 Td (RFT Academic Past Question Document) Tj ET\nendstream\nendobj\nxref\n0 5\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \n0000000216 00000 n \ntrailer\n<< /Size 5 /Root 1 0 R >>\nstartxref\n321\n%%EOF');
+  }
+
+  app.use('/uploads', express.static(uploadsDir));
+  app.use('/uploads', (req, res) => {
+    if (fs.existsSync(samplePdfPath)) {
+      return res.sendFile(samplePdfPath);
+    }
+    res.status(404).send('File not found');
+  });
+
   app.setGlobalPrefix('v1');
   app.useGlobalPipes(
     new ValidationPipe({
@@ -13,6 +37,8 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  await app.listen(process.env.PORT ?? 3000);
+  const port = process.env.PORT || 3006;
+  await app.listen(port);
+  console.log(`🚀 Backend server is running on http://localhost:${port}/v1`);
 }
 bootstrap();

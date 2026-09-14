@@ -1,23 +1,59 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class FacultiesService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async create(data: any) {
-    return this.prisma.faculty.create({ data });
+  async create(data: { name: string; schoolId: string; deanName?: string; capacityTarget?: number }) {
+    if (!data.name || !data.schoolId) {
+      throw new BadRequestException('Faculty name and schoolId are required.');
+    }
+    return this.prisma.faculty.create({
+      data: {
+        name: data.name.trim(),
+        schoolId: data.schoolId,
+        deanName: data.deanName,
+        capacityTarget: data.capacityTarget ? Number(data.capacityTarget) : null,
+        status: 'active',
+      },
+      include: { departments: true },
+    });
   }
 
   async findAllBySchool(schoolId: string) {
     return this.prisma.faculty.findMany({
       where: { schoolId },
       include: { departments: true },
+      orderBy: { createdAt: 'desc' },
+    });
+  }
+
+  async findAllPublic() {
+    return this.prisma.faculty.findMany({
+      include: { departments: true },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async findAllPublicDepartments(facultyId?: string) {
+    return this.prisma.department.findMany({
+      where: facultyId ? { facultyId } : {},
+      include: { faculty: true },
+      orderBy: { name: 'asc' },
     });
   }
 
   async update(id: string, data: any) {
-    return this.prisma.faculty.update({ where: { id }, data });
+    return this.prisma.faculty.update({
+      where: { id },
+      data,
+      include: { departments: true },
+    });
+  }
+
+  async delete(id: string) {
+    return this.prisma.faculty.delete({ where: { id } });
   }
 
   async deactivate(id: string, reason: string) {
@@ -25,5 +61,22 @@ export class FacultiesService {
       where: { id },
       data: { status: 'deactivated' },
     });
+  }
+
+  async createDepartment(data: { name: string; facultyId: string; schoolId: string }) {
+    if (!data.name || !data.facultyId || !data.schoolId) {
+      throw new BadRequestException('Department name, facultyId, and schoolId are required.');
+    }
+    return this.prisma.department.create({
+      data: {
+        name: data.name.trim(),
+        facultyId: data.facultyId,
+        schoolId: data.schoolId,
+      },
+    });
+  }
+
+  async deleteDepartment(id: string) {
+    return this.prisma.department.delete({ where: { id } });
   }
 }

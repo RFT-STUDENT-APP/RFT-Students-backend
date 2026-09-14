@@ -19,10 +19,18 @@ import { AdmissionsModule } from './admissions/admissions.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { SupportModule } from './support/support.module';
 import { FeedbackModule } from './feedback/feedback.module';
+import { UsersModule } from './users/users.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
+import { SettingsModule } from './settings/settings.module';
+import { ChatModule } from './chat/chat.module';
+
+import { AnonymousMessagesModule } from './anonymous-messages/anonymous-messages.module';
 
 @Module({
   controllers: [AppController],
   providers: [AppService],
-  imports: [PrismaModule, AuthModule, EmailModule, SchoolsModule, FacultiesModule, DepartmentsModule, CoursesModule, ContentModule, AnnouncementsModule, ClassRepsModule, NotificationsModule, PaymentsModule, AssessmentsModule, ClassSessionsModule, AdmissionsModule, AnalyticsModule, SupportModule, FeedbackModule],
+  imports: [PrismaModule, AuthModule, EmailModule, SchoolsModule, FacultiesModule, DepartmentsModule, CoursesModule, ContentModule, AnnouncementsModule, ClassRepsModule, NotificationsModule, PaymentsModule, AssessmentsModule, ClassSessionsModule, AdmissionsModule, AnalyticsModule, SupportModule, FeedbackModule, UsersModule, SubscriptionsModule, SettingsModule, ChatModule, AnonymousMessagesModule],
 })
 export class AppModule {}
+
+

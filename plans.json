@@ -1,0 +1,52 @@
+[
+  {
+    "id": "plan-free",
+    "name": "Free Trial",
+    "price": 0,
+    "maxStudents": 10,
+    "features": [
+      "Past Questions View",
+      "Basic Analytics",
+      "Max 10 Students"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "plan-premium",
+    "name": "Premium Plan",
+    "price": 499000,
+    "maxStudents": 5000,
+    "features": [
+      "Past Questions Upload & Download",
+      "Lecturer Management",
+      "Unlimited Class Reps",
+      "Advanced Analytics"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "plan-enterprise",
+    "name": "Enterprise Plan",
+    "price": 1499000,
+    "maxStudents": 4000,
+    "features": [
+      "Multi-Campus Hierarchy",
+      "Dedicated Success Manager",
+      "Custom API Access",
+      "Unlimited Students"
+    ],
+    "status": "active"
+  },
+  {
+    "id": "plan-1789340610717",
+    "name": "Test Plan",
+    "price": 800,
+    "maxStudents": 1,
+    "features": [
+      "Past Question Access",
+      "Lecturer Management",
+      "Assessment Workflows"
+    ],
+    "status": "active"
+  }
+]

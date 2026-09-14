@@ -7,20 +7,44 @@ export class AnalyticsService {
 
   async getDashboardMetrics(schoolId?: string) {
     const whereClause = schoolId ? { schoolId } : {};
+    const userWhereClause = schoolId ? { schoolId } : {};
 
-    const [totalStudents, totalCourses, totalRevenue] = await Promise.all([
-      this.prisma.user.count({ where: { ...whereClause, role: 'STUDENT' } }),
+    const [totalSchools, totalStudents, totalLecturers, totalCourses, totalContent, totalRevenue, activeSubscriptions] = await Promise.all([
+      this.prisma.school.count({ where: { status: { not: 'deleted' } } }),
+      this.prisma.user.count({ where: { ...userWhereClause, role: 'STUDENT' } }),
+      this.prisma.user.count({ where: { ...userWhereClause, role: 'LECTURER' } }),
       this.prisma.course.count({ where: whereClause }),
+      this.prisma.content.count({ where: whereClause }),
       this.prisma.payment.aggregate({
         _sum: { amount: true },
-        where: { status: 'success', user: whereClause },
+        where: { status: 'success' },
       }),
+      this.prisma.subscription.count({ where: { status: 'active' } }),
     ]);
 
+    let schoolCapacity = 0;
+    let nextPlanId: string | null = null;
+    let planExpiresAt: Date | null = null;
+    if (schoolId) {
+      const school = await this.prisma.school.findUnique({ where: { id: schoolId } });
+      schoolCapacity = school?.capacity ?? 10;
+      nextPlanId = school?.nextPlanId || null;
+      planExpiresAt = school?.planExpiresAt || null;
+    }
+
     return {
+      totalSchools,
       totalStudents,
+      totalLecturers,
       totalCourses,
+      totalContent,
       totalRevenue: totalRevenue._sum.amount || 0,
+      activeSubscriptions,
+      pastQuestionsCount: totalContent,
+      schoolCapacity,
+      nextPlanId,
+      planExpiresAt,
     };
   }
 }
+

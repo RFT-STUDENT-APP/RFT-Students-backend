@@ -24,9 +24,23 @@ export class RegisterLecturerDto {
   })
   password!: string;
 
-  // Optional, but if provided it must match the admin's school.
   @IsOptional()
   @IsString()
   schoolName?: string;
+
+  @IsOptional()
+  @IsString()
+  schoolId?: string;
+
+  @IsOptional()
+  @IsString()
+  departmentId?: string;
+
+  @IsOptional()
+  courseIds?: string[];
+
+  @IsOptional()
+  @IsString()
+  customCourse?: string;
 }
 

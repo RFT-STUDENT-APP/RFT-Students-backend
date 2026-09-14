@@ -26,6 +26,8 @@ model School {
   phone          String?
   address        String?
   capacity       Int?
+  planExpiresAt  DateTime?
+  nextPlanId     String?
   status         String       @default("active")
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
@@ -38,6 +40,7 @@ model School {
   announcements  Announcement[]
   subscriptions  Subscription[]
   admissionRequests AdmissionRequest[]
+  anonymousMessages AnonymousMessage[]
 }
 
 model Faculty {
@@ -77,6 +80,7 @@ model User {
   status         String       @default("active")
   profileImageUrl String?
   matricNumber   String?      @unique
+  pushToken      String?
 
   schoolId       String?
   departmentId   String?
@@ -86,20 +90,39 @@ model User {
   level          String?
 
   otps           Otp[]
+  enrollments    Enrollment[]
   classRepAssignments ClassRepAssignment[]
   taughtCourses  Course[]     @relation("LecturerCourses")
   announcements  Announcement[]
+  announcementLikes AnnouncementLike[]
+  announcementComments AnnouncementComment[]
   notifications  Notification[]
   payments       Payment[]
   submissions    AssessmentSubmission[]
   admissionRequests AdmissionRequest[]
   tickets        SupportTicket[]
   feedbacks      Feedback[]
+  uploadedContents Content[]    @relation("UserContent")
+  sentChatMessages ChatMessage[]
+  unlocks        UserUnlock[]
 
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
   @@map("users")
+}
+
+model Enrollment {
+  id             String       @id @default(uuid())
+  studentId      String
+  courseId       String
+  progress       Int          @default(0)
+  student        User         @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  course         Course       @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([studentId, courseId])
 }
 
 model ClassRepAssignment {
@@ -131,11 +154,13 @@ model Course {
   department     Department   @relation(fields: [departmentId], references: [id])
 
   lecturers      User[]       @relation("LecturerCourses")
+  enrollments    Enrollment[]
   classReps      ClassRepAssignment[]
   contents       Content[]
   announcements  Announcement[]
   assessments    Assessment[]
   classSessions  ClassSession[]
+  chatMessages   ChatMessage[]
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
@@ -170,19 +195,43 @@ model Content {
   previewUrl     String?
   downloadUrl    String?
   visibility     String       @default("public")
+  isPaid         Boolean      @default(true)
   price          Int?         @default(0)
+  level          String?
   courseId       String?
   schoolId       String?
-  course         Course?      @relation(fields: [courseId], references: [id])
-  school         School?      @relation(fields: [schoolId], references: [id])
+  uploaderId     String?
+  course         Course?      @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  school         School?      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  uploader       User?        @relation("UserContent", fields: [uploaderId], references: [id], onDelete: SetNull)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+}
+
+model GlobalSetting {
+  key         String   @id
+  value       String
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+model ChatMessage {
+  id          String   @id @default(uuid())
+  courseId    String
+  senderId    String
+  message     String
+  isAnonymous Boolean  @default(false)
+  course      Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  sender      User     @relation(fields: [senderId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
 }
 
 model Announcement {
   id             String       @id @default(uuid())
   title          String
   message        String
+  type           String       @default("GENERAL")
+  imageUrl       String?
   audienceType   String
   courseId       String?
   schoolId       String?
@@ -190,6 +239,30 @@ model Announcement {
   course         Course?      @relation(fields: [courseId], references: [id])
   school         School?      @relation(fields: [schoolId], references: [id])
   author         User         @relation(fields: [authorId], references: [id])
+  likes          AnnouncementLike[]
+  comments       AnnouncementComment[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model AnnouncementLike {
+  id             String       @id @default(uuid())
+  announcementId String
+  userId         String
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@unique([announcementId, userId])
+}
+
+model AnnouncementComment {
+  id             String       @id @default(uuid())
+  announcementId String
+  authorId       String
+  content        String
+  announcement   Announcement @relation(fields: [announcementId], references: [id], onDelete: Cascade)
+  author         User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
@@ -229,6 +302,17 @@ model Payment {
   user           User         @relation(fields: [userId], references: [id])
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
+}
+
+model UserUnlock {
+  id             String       @id @default(uuid())
+  userId         String
+  itemType       String       // "past_question", "course", "resource"
+  itemId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt      DateTime     @default(now())
+
+  @@unique([userId, itemType, itemId])
 }
 
 model Assessment {
@@ -301,6 +385,16 @@ model Feedback {
   isAnonymous    Boolean      @default(false)
   userId         String?
   user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model AnonymousMessage {
+  id             String       @id @default(uuid())
+  message        String
+  schoolId       String?
+  school         School?      @relation(fields: [schoolId], references: [id], onDelete: Cascade)
+  isRead         Boolean      @default(false)
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 }
