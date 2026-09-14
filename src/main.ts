@@ -29,6 +29,15 @@ async function bootstrap() {
     res.status(404).send('File not found');
   });
 
+  app.getHttpAdapter().get('/', (req: any, res: any) => {
+    res.json({
+      status: 'ok',
+      service: 'RFT Students Backend API',
+      version: '1.0.0',
+      timestamp: new Date().toISOString(),
+    });
+  });
+
   app.setGlobalPrefix('v1');
   app.useGlobalPipes(
     new ValidationPipe({
